@@ -1,5 +1,5 @@
 # BetaGrace vI — Capability List
-*Updated May 27, 2026 — reflects current codebase (v4.2)*
+*Updated August 2, 2026 — reflects current codebase (v4.2)*
 
 ---
 
@@ -29,10 +29,10 @@
 
 All text generation cascades through providers until one succeeds:
 
-1. **Pollinations.ai (authenticated)** — primary, fastest, free with API key
-2. **Pollinations.ai (anonymous)** — keyless fallback, no account required
-3. **HuggingFace Llama 3.1-8B-Instruct** — secondary fallback, free tier
-4. **Local Synthesis Engine** — final fallback, always available, fully offline — zero external dependencies
+1. **OpenRouter** — primary, fastest
+2. **Local Synthesis Engine** — final fallback, always available, fully offline, and now powered by seed-first knowledge synthesis, a structured knowledge-lens response layer, and feedback-aware heuristics for more coherent answers without external APIs
+
+Image generation uses Pollinations Flux API and does not require a paid key.
 
 The platform works end-to-end without any paid API keys.
 
@@ -65,6 +65,7 @@ The platform works end-to-end without any paid API keys.
 
 - All user patterns, preferences, and learned insights stored in PostgreSQL (`learning_data`, `long_term_memory` tables)
 - Parallel learning coordinator aggregates and compresses patterns continuously
+- **Local synthesis stack** — uses foundational seed knowledge, supporting memory, and feedback-aware heuristics to produce grounded offline responses with better coherence and less memory-jumbling
 - **Anti-cascade protocol**: learning data uses `ON DELETE SET NULL` — preserved even after session deletion
 - Admin metrics available at `GET /api/health/learning` (requires `ADMIN_TOKEN`)
 - Per-session isolation — one user's patterns never influence another session

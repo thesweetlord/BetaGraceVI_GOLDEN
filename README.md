@@ -15,7 +15,7 @@
 
 BetaGrace is an AI agent platform with 8 specialized writing modes, a cinematic video generation pipeline, a 7-section academic paper builder, image generation with 42 mix-and-match style descriptors, code graph intelligence, a full GDPR compliance layer (Art. 17 + Art. 20), and an in-app admin dashboard — all running as a single self-contained server you can deploy anywhere.
 
-It runs entirely on free-tier AI providers (Pollinations + HuggingFace). No paid API keys are required to get started.
+It runs entirely on free-tier AI providers (OpenRouter + Local Synthesis). No paid API keys are required to get started.
 
 ---
 
@@ -40,10 +40,8 @@ It runs entirely on free-tier AI providers (Pollinations + HuggingFace). No paid
 
 ### AI Provider Chain (fully free)
 Requests cascade through providers until one succeeds:
-1. **Pollinations.ai (authenticated)** — primary, fastest
-2. **Pollinations.ai (anonymous)** — keyless fallback
-3. **HuggingFace Llama 3.1-8B** — secondary fallback
-4. **Local Synthesis Engine** — always available, zero external dependencies
+1. **OpenRouter** — primary, fastest
+2. **Local Synthesis Engine** — always available, zero external dependencies
 
 ### 70×7 Academic Artifact Builder
 - Type `/full [topic]` in chat or click the Write Artifact toolbar button
@@ -123,7 +121,7 @@ Access via Settings → Admin tab with your `ADMIN_TOKEN`:
 | **State** | Zustand + TanStack Query |
 | **Backend** | Express + TypeScript (tsx) |
 | **Database** | PostgreSQL 14+ via Drizzle ORM |
-| **AI / Text** | Pollinations.ai + HuggingFace Llama 3.1-8B + Local Synthesis |
+| **AI / Text** | OpenRouter + Local Synthesis |
 | **AI / Images** | Pollinations Flux API |
 | **Video** | FFmpeg (ffmpeg-static, no install required) |
 | **Email** | nodemailer (SMTP — optional, graceful skip when unconfigured) |
@@ -166,7 +164,6 @@ Everything else is optional. The app works fully without any paid API keys.
 **Optional — for better AI performance:**
 ```env
 POLLINATIONS_API_KEY=your_key_here
-HF_TOKEN=your_huggingface_token
 ```
 
 **Optional — for GDPR Art. 17 email alerts:**

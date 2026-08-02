@@ -99,9 +99,9 @@ BetaGrace vI is a full-stack AI agent platform built for adult creative writing,
                                │
 ┌──────────────────────────────▼──────────────────────────────────┐
 │                    EXTERNAL AI PROVIDERS                          │
-│  Pollinations.ai (text + image — primary)                        │
-│  HuggingFace Llama 3.1-8B (text fallback)                        │
-│  Local Synthesis Engine (always-available offline fallback)      │
+│  OpenRouter.ai (text — primary)                                  │
+│  Pollinations Flux API (images — primary)                        │
+│  Local Synthesis Engine (text fallback, always-available offline)│
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -110,7 +110,7 @@ BetaGrace vI is a full-stack AI agent platform built for adult creative writing,
 ```
 Client → [Middleware Stack] → Route Handler → Guardrail Check
        → Session Validation → Age Verification Check
-       → AI Provider Chain (Pollinations auth → Pollinations anon → HF → Local)
+       → AI Provider Chain (OpenRouter → Local Synthesis)
        → Response Sanitization → Storage (message + learning data)
        → Client
 ```

@@ -73,14 +73,14 @@ We do not sell your personal information. We may share information:
 
 #### AI Synthesis \& Third‑Party Services
 
-Text generation requests are routed through a secure, multi-provider fallback chain managed by your self-hosted instance. This includes the Pollinations.ai API, HuggingFace Inference API, and Google Cloud Vertex AI (configured with enterprise-grade data protection to ensure no data is used for model training). All conversational data is handled in accordance with the respective providers' enterprise terms; notably, no data is used for corporate model training by these services. All message histories are stored exclusively within your private, local PostgreSQL instance. A fully offline Local Synthesis Engine serves as the final endpoint fallback.
-Important Privacy Notice: While this architecture is designed to support high-level data privacy, the final security posture depends on your account configuration. Please ensure your respective API keys for Google Cloud, Pollinations, and Hugging Face are set to "Data Sharing: Off" or "No-Training" within your provider's dashboard, as required by your specific service providers.
+Text generation requests are routed through a secure, multi-provider fallback chain managed by your self-hosted instance. This includes the OpenRouter API for primary text generation and a fully offline Local Synthesis Engine as the final endpoint fallback. All conversational data is handled in accordance with the provider's terms. All message histories are stored exclusively within your private, local PostgreSQL instance.
+Important Privacy Notice: While this architecture is designed to support high-level data privacy, the final security posture depends on your account configuration. Please ensure your respective API keys for OpenRouter are configured according to your provider's data protection settings.
 
 We use third-party services only for:
 
 * **Image Generation:** Pollinations Flux API for optional image creation (image prompts only, not full conversation context)
 
-**Hosting \& Infrastructure:** Pollinations Flux API, HuggingFace API. Local Fallback BM25.
+**Hosting \& Infrastructure:** Pollinations Flux API. Local Fallback BM25.
 
 Data Retention
 
