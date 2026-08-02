@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ci:
+    name: Type-check + Smoke Tests (79 tests)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: betagrace
+          POSTGRES_PASSWORD: betagrace
+          POSTGRES_DB: betagrace_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://betagrace:betagrace@localhost:5432/betagrace_test
+      SESSION_SECRET: ci_test_session_secret_not_for_production
+      ADMIN_TOKEN: ci_test_admin_token_not_for_production
+      DEV_PASSWORD: ci_test_dev_password_not_for_production
+      NODE_ENV: test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Push database schema
+        run: npx drizzle-kit push --force
+
+      - name: TypeScript check
+        run: npx tsc --noEmit
+
+      - name: Start server (background)
+        run: npm run dev &
+
+      - name: Wait for server to be ready
+        run: |
+          echo "Waiting for server on port 5000..."
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:5000/api/health/db > /dev/null 2>&1; then
+              echo "Server is up after ${i}s"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Server did not start within 30 seconds"
+          exit 1
+
+      - name: Run smoke tests (FAST mode — skips 60s artifact poll)
+        run: BASE_URL=http://localhost:5000 FAST=1 npx tsx smoke-tests.ts
+
+      - name: Stop server
+        if: always()
+        run: pkill -f "tsx ./server/index.ts" 2>/dev/null || true

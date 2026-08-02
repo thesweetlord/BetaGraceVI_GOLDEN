@@ -1,0 +1,84 @@
+# ── Dependencies ──────────────────────────────────────────────────────────────
+node_modules/
+.pnp
+.pnp.js
+
+# ── Build outputs ─────────────────────────────────────────────────────────────
+dist/
+build/
+.tsbuildinfo
+tsc_out.txt
+typecheck_out.txt
+build.log
+
+# ── Environment & secrets ─────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+.env.*
+*.pem
+*.key
+*.pfx
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+*.log
+logs/
+pipeline.log
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+.eggs/
+dist/
+.venv/
+venv/
+uv.lock
+
+# ── Temp / generated assets ───────────────────────────────────────────────────
+temp_frames/
+temp_videos/
+attached_assets/
+generated_videos/
+
+# ── Archives ──────────────────────────────────────────────────────────────────
+*.zip
+*.tar.gz
+
+# ── Replit platform files ─────────────────────────────────────────────────────
+.replit
+replit.nix
+.local/
+.config/
+.cache/
+.agents/
+.upm/
+
+# ── Temp / scratch files ───────────────────────────────────────────────────────
+tmp-*.js
+tmp-*.ts
+tmp-*.py
+*.tmp
+
+# ── Lock files (optional — remove these lines if you want to commit them) ─────
+package-lock.json
+
+# ── OS noise ──────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Aletheia runtime data ────────────────────────────────────────────────────
+aletheia/data/
+aletheia/BetaGrace.egg-info/
+
+# ── Python lock (regeneratable) ─────────────────────────────────────────────
+uv.lock
+
+# ── Runtime artifact files (generated at runtime, not source) ────────────────
+academic_artifact.md
+academic_artifact_*.md
+
+# ── Runtime data (synthesis memory, learning state — auto-generated) ─────────
+data/

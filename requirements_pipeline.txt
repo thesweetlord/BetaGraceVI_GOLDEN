@@ -1,0 +1,15 @@
+# Video Generation Pipeline — Python Dependencies
+# Install with: pip install -r requirements_pipeline.txt
+
+# HTTP client — API calls to Stability AI, Runway ML, OpenAI
+requests>=2.31.0
+
+# Environment variable loading from .env file
+python-dotenv>=1.0.0
+
+# Image inspection (optional — validator uses pure binary PNG parsing by default,
+# but Pillow can be used as a fallback for extended format support)
+Pillow>=10.0.0
+
+# Progress bars for long-running stages (optional quality-of-life)
+tqdm>=4.66.0

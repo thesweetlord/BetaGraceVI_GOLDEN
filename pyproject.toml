@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "BetaGrace"
+version = "0.1.0"
+description = "BetaGrace AI agent platform"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "beautifulsoup4>=4.14.3",
+    "chromadb>=1.5.8",
+    "duckduckgo-search>=8.1.1",
+    "fastapi>=0.136.1",
+    "feedparser>=6.0.12",
+    "httpx>=0.28.1",
+    "lxml>=6.1.0",
+    "networkx>=3.6.1",
+    "pillow>=12.2.0",
+    "pydantic>=2.13.3",
+    "python-dateutil>=2.9.0.post0",
+    "python-dotenv>=1.2.2",
+    "requests>=2.34.2",
+    "rich>=15.0.0",
+    "tenacity>=9.1.4",
+    "tqdm>=4.67.3",
+    "typer>=0.25.0",
+    "uvicorn>=0.46.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["aletheia"]
+include = ["aletheia*"]
+[tool.uv]
+environments = [
+    "sys_platform == 'linux' and platform_machine == 'x86_64'"
+]
