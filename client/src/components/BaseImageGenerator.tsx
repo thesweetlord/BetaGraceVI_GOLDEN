@@ -102,7 +102,10 @@ export function BaseImageGenerator({ initialStyle }: AdvancedImageGeneratorProps
           const proxiedHosts = ['image.pollinations.ai', 'gen.pollinations.ai', 'pollinations.ai', 'images.pollinations.ai', '.r2.cloudflarestorage.com'];
           const shouldProxy = proxiedHosts.some(s => host === s || host.endsWith(s));
           if (shouldProxy) {
-            finalData = { ...data, imageUrl: `/api/proxy-image?url=${encodeURIComponent(data.imageUrl)}` };
+            const proxiedUrl = `/api/proxy-image?url=${encodeURIComponent(data.imageUrl)}`;
+            finalData = { ...data, imageUrl: `${proxiedUrl}&v=${Date.now()}` };
+          } else {
+            finalData = { ...data, imageUrl: `${data.imageUrl}${data.imageUrl.includes('?') ? '&' : '?'}v=${Date.now()}` };
           }
         }
       } catch (e) {
@@ -143,7 +146,10 @@ export function BaseImageGenerator({ initialStyle }: AdvancedImageGeneratorProps
           const proxiedHosts = ['image.pollinations.ai', 'gen.pollinations.ai', 'pollinations.ai', 'images.pollinations.ai', '.r2.cloudflarestorage.com'];
           const shouldProxy = proxiedHosts.some(s => host === s || host.endsWith(s));
           if (shouldProxy) {
-            finalData = { ...data, imageUrl: `/api/proxy-image?url=${encodeURIComponent(data.imageUrl)}` };
+            const proxiedUrl = `/api/proxy-image?url=${encodeURIComponent(data.imageUrl)}`;
+            finalData = { ...data, imageUrl: `${proxiedUrl}&v=${Date.now()}` };
+          } else {
+            finalData = { ...data, imageUrl: `${data.imageUrl}${data.imageUrl.includes('?') ? '&' : '?'}v=${Date.now()}` };
           }
         }
       } catch (e) {

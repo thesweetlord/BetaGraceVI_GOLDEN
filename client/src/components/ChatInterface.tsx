@@ -475,6 +475,9 @@ export function ChatInterface() {
       }
       
       console.log('[ChatInterface] Image generated successfully:', data.imageUrl);
+      const freshImageUrl = data.imageUrl.includes('?')
+        ? `${data.imageUrl}&v=${Date.now()}`
+        : `${data.imageUrl}?v=${Date.now()}`;
       
       // CRITICAL: Clear old image and force re-render before setting new one
       setGeneratedImage(null);
@@ -482,7 +485,7 @@ export function ChatInterface() {
       // Use setTimeout to ensure state clears before updating
       setTimeout(() => {
         // Display the generated image
-        setGeneratedImage(data.imageUrl);
+        setGeneratedImage(freshImageUrl);
         
         toast({
           title: "Image Generated",
@@ -937,11 +940,14 @@ export function ChatInterface() {
               setCurrentConversationId(parsed.conversationId);
               queryClient.invalidateQueries({ queryKey: ["conversationHistory"] });
               if (parsed.imageUrl) {
-                setGeneratedImage(parsed.imageUrl);
+                const freshImageUrl = parsed.imageUrl.includes('?')
+                  ? `${parsed.imageUrl}&v=${Date.now()}`
+                  : `${parsed.imageUrl}?v=${Date.now()}`;
+                setGeneratedImage(freshImageUrl);
                 streamImageAlreadyGenerated = true;
-                // Extract the [IMAGE:] tag from the streamed text to use as base prompt
+                // Keep the original visual request when the response has no image tag.
                 const tagMatch = accumulated.match(/\[IMAGE:\s*([\s\S]+?)\](?!\()/i);
-                streamImagePrompt = tagMatch?.[1]?.trim() ?? accumulated.substring(0, 200);
+                streamImagePrompt = tagMatch?.[1]?.trim() ?? message;
                 setBaseImagePrompt(streamImagePrompt);
                 toast({ title: "Image Generated", description: "Your image has been created." });
               }

@@ -65,7 +65,10 @@ export function AdvancedImageGenerator({ initialStyle }: AdvancedImageGeneratorP
       return await response.json();
     },
     onSuccess: (data) => {
-      setResult(data);
+      const imageUrl = data.imageUrl.startsWith('https://gen.pollinations.ai/')
+        ? `/api/proxy-image?url=${encodeURIComponent(data.imageUrl)}&v=${Date.now()}`
+        : `${data.imageUrl}${data.imageUrl.includes('?') ? '&' : '?'}v=${Date.now()}`;
+      setResult({ ...data, imageUrl });
       toast({
         title: 'Image Generated',
         description: `Generated ${data.style} image successfully`
@@ -88,7 +91,10 @@ export function AdvancedImageGenerator({ initialStyle }: AdvancedImageGeneratorP
       return await response.json();
     },
     onSuccess: (data) => {
-      setResult(data);
+      const imageUrl = data.imageUrl.startsWith('https://gen.pollinations.ai/')
+        ? `/api/proxy-image?url=${encodeURIComponent(data.imageUrl)}&v=${Date.now()}`
+        : `${data.imageUrl}${data.imageUrl.includes('?') ? '&' : '?'}v=${Date.now()}`;
+      setResult({ ...data, imageUrl });
       toast({
         title: 'Image Regenerated',
         description: `Regenerated with ${data.style} style at ${Math.round(data.strength * 100)}% strength`

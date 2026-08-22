@@ -551,8 +551,8 @@ export function generateTextToImageURL(
   const n = encodeURIComponent(negative);
 
   // enter.pollinations.ai is officially deprecated (308 + deprecation:true header).
-  // image.pollinations.ai/prompt/ is the correct free single-image endpoint (HTTP 200).
-  let url = `https://image.pollinations.ai/prompt/${p}?model=${styleData.model}&width=${width}&height=${height}&seed=${seed}&nologo=true&negative=${n}`;
+  // Use Pollinations' official unified image endpoint.
+  let url = `https://gen.pollinations.ai/image/${p}?model=${styleData.model}&width=${width}&height=${height}&seed=${seed}&nologo=true&negative=${n}`;
   if (typeof loraWeight === 'number') {
     url += `&lora_weight=${Number(loraWeight).toFixed(3)}`;
   }
@@ -582,8 +582,8 @@ function generateImageToImageURL(
 
   const nEnc = encodeURIComponent(negative);
 
-  // enter.pollinations.ai is officially deprecated. Use image.pollinations.ai (free endpoint).
-  let url = `https://image.pollinations.ai/prompt/${p}?model=${styleData.model}&width=${width}&height=${height}&seed=${seed}&nologo=true&negative=${nEnc}&image=${img}&strength=${strength}`;
+  // Use Pollinations' official unified image endpoint.
+  let url = `https://gen.pollinations.ai/image/${p}?model=${styleData.model}&width=${width}&height=${height}&seed=${seed}&nologo=true&negative=${nEnc}&image=${img}&strength=${strength}`;
   if (typeof loraWeight === 'number') {
     url += `&lora_weight=${Number(loraWeight).toFixed(3)}`;
   }
@@ -697,7 +697,9 @@ export function registerAdvancedImageRoutes(app: Express): void {
 
       console.log('[ADVANCED-IMAGE] Generated text-to-image URL with style:', selectedStyle);
 
-      res.set('Cache-Control', 'public, max-age=300');
+      res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.set('Pragma', 'no-cache');
+      res.set('Expires', '0');
       res.json({
         success: true,
         type: 'text-to-image',
@@ -816,7 +818,9 @@ export function registerAdvancedImageRoutes(app: Express): void {
 
       console.log('[ADVANCED-IMAGE] Generated image-to-image URL with style:', selectedStyle, 'strength:', selectedStrength);
 
-      res.set('Cache-Control', 'public, max-age=300');
+      res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.set('Pragma', 'no-cache');
+      res.set('Expires', '0');
       res.json({
         success: true,
         type: 'image-to-image',

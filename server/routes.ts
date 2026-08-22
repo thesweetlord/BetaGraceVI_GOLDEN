@@ -377,6 +377,30 @@ export function registerRoutes(app: Express): void {
       if (noCtx.length <= MAX_SYSTEM_CHARS) return noCtx;
     }
 
+    // Keep the synthesis result available even when other injected context is large.
+    const synthesisMarker = "\n\n[LOCAL SYNTHESIS CONTEXT]\n";
+    const synthesisStart = prompt.indexOf(synthesisMarker);
+    if (synthesisStart !== -1) {
+      const synthesisEndMarker = "\n[END LOCAL SYNTHESIS CONTEXT]";
+      const synthesisEndSearch = prompt.indexOf(
+        synthesisEndMarker,
+        synthesisStart + synthesisMarker.length,
+      );
+      const synthesisEnd = synthesisEndSearch !== -1
+        ? synthesisEndSearch + synthesisEndMarker.length
+        : prompt.length;
+      const synthesisBlock = prompt.slice(synthesisStart, synthesisEnd);
+      const availableBase = MAX_SYSTEM_CHARS - synthesisBlock.length - 80;
+      if (availableBase > 400) {
+        const base = prompt.slice(0, synthesisStart);
+        const half = Math.floor(availableBase / 2);
+        const trimmedBase = base.length <= availableBase
+          ? base
+          : `${base.slice(0, half)}\n…[prompt context trimmed]\n${base.slice(-half)}`;
+        return `${trimmedBase}${synthesisBlock}`.slice(0, MAX_SYSTEM_CHARS);
+      }
+    }
+
     // Last resort: hard truncate (this should almost never happen)
     return prompt.slice(0, MAX_SYSTEM_CHARS) + "\n…[prompt truncated]";
   }
@@ -702,6 +726,27 @@ export function registerRoutes(app: Express): void {
     return trace;
   }
 
+  function enrichPromptWithSynthesis(
+    systemPrompt: string,
+    userMessage: string,
+    mode: string,
+    ownerScope: string,
+  ): { prompt: string; recordIds: string[] } {
+    const synthesisResult = synthesisEngine.synthesize(
+      systemPrompt,
+      userMessage,
+      mode,
+      ownerScope,
+    );
+    console.log(
+      `[SYNTHESIS] Chat context prepared (mode: ${mode}, support: ${synthesisResult.trace?.supportLevel ?? "limited"}, records: ${synthesisResult.trace?.recordIds.length ?? 0})`,
+    );
+    return {
+      prompt: `${systemPrompt}\n\n[LOCAL SYNTHESIS CONTEXT]\n${synthesisResult.text}\n[END LOCAL SYNTHESIS CONTEXT]`,
+      recordIds: synthesisResult.trace?.recordIds ?? [],
+    };
+  }
+
   function getBoneMarrowFeedback(message: string): { boneDelta: number; marrowDelta: number } {
     if (!isShortEvaluativeFeedback(message)) {
       return { boneDelta: 0, marrowDelta: 0 };
@@ -739,6 +784,7 @@ export function registerRoutes(app: Express): void {
     options?: { maxTokens?: number; temperature?: number },
     textModel: string = openRouterModel,
     ownerScope?: string | null,
+    mode = "standard",
   ): Promise<AIGenerationResult> {
     const { maxTokens = 32768, temperature = 0.8 } = options ?? {};
 
@@ -766,13 +812,14 @@ export function registerRoutes(app: Express): void {
           userMessage,
           openRouterText,
           "openrouter",
-          "standard",
+          mode,
           {
             memory: true,
             source: "conversation",
             ownerScope: ownerScope ?? null,
           },
         );
+        console.log(`[SYNTHESIS] Indexed OpenRouter response (mode: ${mode})`);
       } catch (err) {
         console.error("[SYNTHESIS] observe() failed after OpenRouter success:", err);
       }
@@ -797,7 +844,16 @@ export function registerRoutes(app: Express): void {
       "[AI] All cloud providers exhausted — activating local synthesis as final fallback.",
     );
     try {
-      const text = await synthesizeLocalResponse(systemPrompt, userMessage, ownerScope ?? null);
+      let localTrace: AIGenerationResult["trace"] = null;
+      const text = await synthesizeLocalResponse(
+        systemPrompt,
+        userMessage,
+        ownerScope ?? null,
+        mode,
+        (trace) => {
+          localTrace = trace;
+        },
+      );
       console.log("[AI] Local synthesis final fallback succeeded.");
       try {
         synthesisEngine.observe(
@@ -805,13 +861,14 @@ export function registerRoutes(app: Express): void {
           userMessage,
           text,
           "local",
-          "standard",
+          mode,
           {
             memory: true,
             source: "conversation",
             ownerScope: ownerScope ?? null,
           },
         );
+        console.log(`[SYNTHESIS] Indexed local response (mode: ${mode})`);
       } catch (err) {
         console.error("[SYNTHESIS] observe() failed after local fallback success:", err);
       }
@@ -821,7 +878,7 @@ export function registerRoutes(app: Express): void {
         model: "betagrace-local",
         fallbackUsed: true,
         fallbackReason: "all_providers_failed",
-        trace: null,
+        trace: localTrace,
       };
     } catch (localErr) {
       console.error(
@@ -842,9 +899,14 @@ export function registerRoutes(app: Express): void {
     systemPrompt: string,
     userMessage: string,
     ownerScope?: string | null,
+    requestedMode?: string,
+    onTrace?: (trace: NonNullable<AIGenerationResult["trace"]>) => void,
   ): Promise<string> {
     const msg = userMessage.trim();
     const lower = msg.toLowerCase();
+    console.log(
+      `[SYNTHESIS] Local synthesis requested (mode: ${requestedMode ?? "auto"}, owner: ${ownerScope ?? "global"})`,
+    );
 
     // Greeting detection
     if (
@@ -885,14 +947,28 @@ export function registerRoutes(app: Express): void {
     // ── Derive a canonical mode string from the detected booleans ───────────────
     // [FIX] Previously synthesize() was always called without mode (defaulted to
     // "standard"), so Stage B re-ranking never got a mode affinity signal.
-    const detectedMode = isFleshArchitectMode  ? "flesh_architect"
+    const detectedMode = requestedMode ?? (isFleshArchitectMode  ? "flesh_architect"
       : isSanctuaryMode       ? "sanctuary"
       : isVideoGeneratorMode  ? "video_generator"
       : isCodeGraphMode       ? "code_graph"
       : isAcademicMode        ? "academic_research"
       : isAutonomousMode      ? "autonomous"
       : isAdvReasoningMode    ? "advanced_reasoning"
-      : "standard";
+      : "standard");
+
+    const synthesisResult = synthesisEngine.synthesize(
+      systemPrompt,
+      msg,
+      detectedMode,
+      ownerScope ?? null,
+    );
+    if (synthesisResult.trace && onTrace) onTrace(synthesisResult.trace);
+    if (synthesisResult.trace && synthesisResult.trace.recordIds.length > 0) {
+      console.log(
+        `[SYNTHESIS] Using retrieved local response as fallback output (mode: ${detectedMode})`,
+      );
+      return synthesisResult.text;
+    }
 
     // Topic detection for rich local responses
     const isWriting =
@@ -1187,7 +1263,9 @@ export function registerRoutes(app: Express): void {
     // relevant memory (indicated by "semantic confidence:" in the footer), return
     // that personalized synthesis immediately. Static topic blocks below only
     // activate when the synthesis engine has no close match in memory.
-    const synthesisResult = synthesisEngine.synthesize(systemPrompt, msg, detectedMode, ownerScope ?? null);
+    console.log(
+      `[SYNTHESIS] Retrieval complete (mode: ${detectedMode}, tracedRecords: ${synthesisResult.trace?.recordIds.length ?? 0})`,
+    );
     const hasSynthesizedMemory = synthesisResult.text.includes("semantic confidence:");
     if (hasSynthesizedMemory) {
       console.log(
@@ -2820,6 +2898,11 @@ Apply these principles while respecting the creative context and user preference
         return res.status(400).json({ error: "Unsupported image URL" });
       }
 
+      // Generated images must never be reused from browser/proxy caches.
+      res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+      res.setHeader("Pragma", "no-cache");
+      res.setHeader("Expires", "0");
+
       let attempt = 0;
       let lastError: Error | null = null;
 
@@ -2974,8 +3057,6 @@ Apply these principles while respecting the creative context and user preference
                   );
                   res.status(200);
                   res.setHeader("Content-Type", contentType2);
-                  if (cacheControl2)
-                    res.setHeader("Cache-Control", cacheControl2);
                   if (contentDisposition2)
                     res.setHeader("Content-Disposition", contentDisposition2);
                   res.send(buffer2);
@@ -2999,7 +3080,6 @@ Apply these principles while respecting the creative context and user preference
 
           res.status(200);
           res.setHeader("Content-Type", contentType);
-          if (cacheControl) res.setHeader("Cache-Control", cacheControl);
           if (contentDisposition)
             res.setHeader("Content-Disposition", contentDisposition);
           res.send(buffer);
@@ -3028,8 +3108,8 @@ Apply these principles while respecting the creative context and user preference
 
   /**
    * Builds the best possible Pollinations image URL.
-   * - Uses image.pollinations.ai/prompt/{text} — the free, no-auth-required endpoint (HTTP 200)
-   * - gen.pollinations.ai is the unified API but requires an API key (returns 401 without one)
+  * - Uses gen.pollinations.ai/image/{text} — the official unified image endpoint
+  * - Authentication is attached by the image proxy when POLLINATIONS_API_KEY is configured
    * - enter.pollinations.ai is officially deprecated (returns 308 with deprecation:true header)
    * - Surgically cleans markdown artifacts without destroying prompt content
    * - Injects the selected art style into the prompt
@@ -3062,11 +3142,7 @@ Apply these principles while respecting the creative context and user preference
 
     const enc = encodeURIComponent(cleanPrompt.substring(0, 1400));
     const seed = Math.floor(Math.random() * 2147483647);
-    const pollinationsToken = process.env.POLLINATIONS_API_KEY;
-    const keyParam = pollinationsToken
-      ? `&key=${encodeURIComponent(pollinationsToken)}`
-      : "";
-    return `https://image.pollinations.ai/prompt/${enc}?model=${imageModel}&width=1024&height=1024&nologo=true&enhance=false&seed=${seed}${keyParam}`;
+    return `https://gen.pollinations.ai/image/${enc}?model=${imageModel}&width=1024&height=1024&nologo=true&enhance=false&seed=${seed}`;
   }
 
   /**
@@ -4906,12 +4982,21 @@ Output format:
         systemPrompt += `\n\n[IMAGE GENERATION ACTIVE] The user is explicitly requesting an image. You MUST include a vivid, detailed [IMAGE: <prompt>] tag in your response — this is not optional. Write 1-3 sentences of narrative context, then embed the [IMAGE: ...] tag with a richly descriptive prompt covering subject, artistic style, lighting, color palette, mood, and composition. Example: [IMAGE: ethereal forest clearing at twilight, ancient oak trees draped in bioluminescent moss, soft purple mist, fantasy realism, dramatic rim lighting, ultra-detailed, cinematic composition]. The image will be auto-generated from this tag.`;
       }
 
+      const synthesisContext = enrichPromptWithSynthesis(
+        systemPrompt,
+        userMsg,
+        mode,
+        sessionId,
+      );
+      systemPrompt = synthesisContext.prompt;
+
       const genResult = await generateWithFallback(
         capSystemPromptForProvider(systemPrompt),
         userMsg,
         { maxTokens: body.maxTokens },
         openRouterModel,
         sessionId,
+        mode,
       );
       let aiResponse = genResult.text;
       if (genResult.provider === "local") {
@@ -5034,6 +5119,15 @@ Output format:
       }
 
       aiResponse = sanitizeAiResponse(aiResponse);
+      const turnScore = synthesisEngine.scoreTurn(
+        aiResponse,
+        userMsg,
+        undefined,
+        synthesisContext.recordIds,
+      );
+      console.log(
+        `[SYNTHESIS] Scored chat turn (mode: ${mode}, score: ${turnScore.turnScore}, records: ${synthesisContext.recordIds.length})`,
+      );
       console.log(
         "[SANITIZED AI RESPONSE]",
         JSON.stringify(aiResponse.substring(0, 500)),
@@ -5768,6 +5862,14 @@ Output format:
       const sendEvent = (data: object) =>
         res.write(`data: ${JSON.stringify(data)}\n\n`);
 
+      const synthesisContext = enrichPromptWithSynthesis(
+        systemPrompt,
+        userMsg,
+        mode,
+        sessionId,
+      );
+      systemPrompt = synthesisContext.prompt;
+
       // Cap the system prompt so input never starves the model's output budget
       const cappedSystemPrompt = capSystemPromptForProvider(systemPrompt);
       if (cappedSystemPrompt.length < systemPrompt.length) {
@@ -5786,6 +5888,7 @@ Output format:
         textModel,
         maxTokens,
       );
+      const streamedFromOpenRouter = !!fullText;
 
       // If streaming failed, fall back to non-streaming
       if (!fullText) {
@@ -5798,6 +5901,7 @@ Output format:
           { maxTokens },
           textModel,
           sessionId,
+          mode,
         );
         fullText = genResult.text;
         if (genResult.provider === "local") {
@@ -5824,6 +5928,24 @@ Output format:
         localSynthesisFeedbackMap.delete(sessionId);
       }
 
+      if (streamedFromOpenRouter && fullText) {
+        try {
+          synthesisEngine.observe(
+            cappedSystemPrompt,
+            userMsg,
+            fullText,
+            "openrouter",
+            mode,
+            { memory: true, source: "conversation", ownerScope: sessionId },
+          );
+        } catch (err) {
+          console.error(
+            "[SYNTHESIS/STREAM] observe() failed after OpenRouter success:",
+            err,
+          );
+        }
+      }
+
       // Sanitize and apply guardrails
       const respGuard = executeResponseGuardrails(fullText);
       fullText = sanitizeAiResponse(respGuard.sanitized);
@@ -5832,6 +5954,16 @@ Output format:
       if (fullText.trim().toLowerCase().startsWith("<!doctype html")) {
         fullText = `I can't display that response right now, but I can still help.\n\nWhat would you like to do next: continue the story, revise the tone, or explore a new scene?`;
       }
+
+      const turnScore = synthesisEngine.scoreTurn(
+        fullText,
+        userMsg,
+        undefined,
+        synthesisContext.recordIds,
+      );
+      console.log(
+        `[SYNTHESIS/STREAM] Scored chat turn (mode: ${mode}, score: ${turnScore.turnScore}, records: ${synthesisContext.recordIds.length})`,
+      );
 
       const tokensUsed = Math.ceil((userMsg.length + fullText.length) / 4);
 

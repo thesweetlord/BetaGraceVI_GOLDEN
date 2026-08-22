@@ -1585,13 +1585,19 @@ export class SynthesisEngine {
     const topics = detectTopics(userMessage);
     const rankedPool = [...selection.seedMatches, ...selection.memoryMatches].slice(0, 4);
 
+    const normalizeLearnedResponse = (text: string): string => text
+      .replace(/^\s*#{1,6}.*$/gm, "")
+      .replace(/^\s*\*?\[?(?:Local synthesis|Advanced Reasoning mode|Cloud providers are reconnecting)[^\n]*$/gim, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
     const extractSentence = (text: string): string | null => {
-      const candidates = splitSentences(text).filter(s => s.length >= 45);
+      const candidates = splitSentences(normalizeLearnedResponse(text)).filter(s => s.length >= 45);
       return candidates[0] ?? null;
     };
 
     const overviewSource = rankedPool
-      .map(r => extractSentence(r.response) ?? r.response.slice(0, 220).replace(/\n/g, " ").trim())
+      .map(r => extractSentence(r.response) ?? normalizeLearnedResponse(r.response).slice(0, 220))
       .find(Boolean)
       ?? "I have limited local support for this question, but I can still synthesize a grounded answer from the knowledge currently stored offline.";
 
