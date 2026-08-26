@@ -90,7 +90,7 @@ function buildParams(p: number, filters: Filters, extra?: Record<string, string>
 
 export default function AdminConsentAudit() {
   const { toast } = useToast();
-  const [token, setToken] = useState(() => sessionStorage.getItem(SESSION_KEY) ?? "");
+  const [token, setToken] = useState(() => (sessionStorage.getItem(SESSION_KEY) ?? "").trim());
   const [tokenInput, setTokenInput] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
 
@@ -141,9 +141,10 @@ export default function AdminConsentAudit() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    sessionStorage.setItem(SESSION_KEY, tokenInput);
-    setToken(tokenInput);
-    await fetchData(1, filters, tokenInput);
+    const normalizedToken = tokenInput.trim();
+    sessionStorage.setItem(SESSION_KEY, normalizedToken);
+    setToken(normalizedToken);
+    await fetchData(1, filters, normalizedToken);
   };
 
   useEffect(() => {

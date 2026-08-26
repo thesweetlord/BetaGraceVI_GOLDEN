@@ -2631,7 +2631,7 @@ Apply these principles while respecting the creative context and user preference
     try {
       const adminToken = process.env.ADMIN_TOKEN?.trim();
       const providedToken = req.get("x-admin-token")?.trim();
-      if (adminToken && providedToken !== undefined && providedToken !== adminToken) {
+      if (!adminToken || providedToken !== adminToken) {
         return res.status(401).json({ success: false, error: "Unauthorized" });
       }
       res.json({ success: true, stats: synthesisEngine.getStats() });
@@ -2652,7 +2652,7 @@ Apply these principles while respecting the creative context and user preference
   app.post("/api/synthesis/test-retrieval", (req, res) => {
     try {
       const adminToken = process.env.ADMIN_TOKEN?.trim();
-      if (adminToken && req.get("x-admin-token")?.trim() !== adminToken) {
+      if (!adminToken || req.get("x-admin-token")?.trim() !== adminToken) {
         return res.status(401).json({ success: false, error: "Unauthorized" });
       }
       const userMessage = typeof req.body?.userMessage === "string"

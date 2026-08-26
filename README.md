@@ -1,13 +1,24 @@
 # BetaGrace vI
-[![CI](https://github.com/thesweetlord/BetAGracevI.git/actions/workflows/ci.yml/badge.svg)](https://github.com/thesweetlord/BetAGracevI.git/actions/workflows/ci.yml)
+(https://github.com/thesweetlord/BetaGraceVI_GOLDEN)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Node](https://img.shields.io/badge/Node.js-20-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
-[![Tests](https://img.shields.io/badge/smoke%20tests-79%2F79%20passing-brightgreen) ( https://github.com/thesweetlord/BetAGracevI.git )(https://github.com/thesweetlord/BetAGracevI/blob/main/.github/workflows/ci.yml)
-
+[![Tests](https://img.shields.io/badge/smoke%20tests-76%2F78%20passing-yellow)  
 **BetaGrace vI** is a full-stack AI agent platform designed for adult creative writing, multi-modal generation (text, image, video), and deep narrative exploration. Built on TypeScript, React, Express, and PostgreSQL — runs entirely on free-tier AI providers.
 
 **Current Version:** 4.3 — May 27, 2026
-**Test Status:** 79/79 smoke tests passing — 0 TypeScript errors (strict mode)
+**Test Status:** `npm run test:fast` — 76/78 smoke tests passing (97.4%); 2 local-synthesis debug retrieval checks currently return 401 Unauthorized.
+
+## Image Generation Benchmark
+
+### High-Density Constraint-Locking Evaluation
+
+**20 / 27 canonical concepts passed (81.5%)** under strict zero-tolerance visual verification.
+
+This public benchmark tests whether an image-generation system can hold a dense set of precise, verifiable constraints at once, including laterality, exact text placement and material, dual lighting temperatures, micro-details, and object states. One missing or unverifiable critical constraint is a **FAIL**; aspect ratio is excluded from the pass/fail metric.
+
+The result applies to the documented prompts, endpoints, attempt budgets, and visual verification rules. It does not claim that the underlying image model was modified or retrained, universal superiority across prompts or model versions, or statistical dominance from the small head-to-head sample.
+
+**Benchmark package:** IMAGE BENCHMARK.zip [README](IMAGE%20BENCHMARK/README.txt) · [master report](IMAGE%20BENCHMARK/BetaGrace_Benchmark_Master_Report_v2_5_Corrected.docx) · [27-prompt table](IMAGE%20BENCHMARK/BetaGrace_27_Canonical_Prompt_Table.xlsx) · [passing images](IMAGE%20BENCHMARK/Passes/) · [failed images](IMAGE%20BENCHMARK/Fails/) · [public image logs](IMAGE%20BENCHMARK/Public_image_logs_for_Postgresql_CLEAN.zip)
 
 ---
 
@@ -195,14 +206,14 @@ Open `http://localhost:5000` — you'll see the age verification screen, then th
 ## Running Tests
 
 ```bash
-# Fast mode (72 tests, ~40s) — skips the 7 long-polling artifact tests
+# Fast mode (78 tests, ~23s) — skips long-polling artifact waits
 npm run test:fast
 
-# Full suite (79 tests, up to ~3 min)
+# Full suite (includes artifact polling and may take several minutes)
 npm run test
 ```
 
-72 tests covering: all 8 AI modes, full session lifecycle, SSE streaming, artifact builder pipeline, video mode guards, code graph analysis, memory system, guardrails (injection + oversized message), privacy endpoints (export/delete/ZIP/anti-cascade), admin token auth, GDPR flows, feature toggles, concurrent session isolation, and session edge cases.
+The fast suite covers: all 8 AI modes, full session lifecycle, SSE streaming, artifact builder pipeline, video mode guards, code graph analysis, memory system, guardrails (injection + oversized message), privacy endpoints (export/delete/anti-cascade), admin token auth, GDPR flows, feature toggles, concurrent session isolation, session edge cases, max-token validation, and database schema checks. The current run passes 76 of 78 checks; the two failures are local-synthesis debug retrieval checks receiving `401 Unauthorized`.
 
 ---
 
@@ -233,7 +244,7 @@ betagrace/
 │   └── code-graph-analyzer.ts          # JS/TS/Python graph builder
 ├── shared/
 │   └── schema.ts                        # Drizzle ORM schema (10 tables)
-├── smoke-tests.ts                       # 72-test integration suite
+├── smoke-tests.ts                       # Integration smoke-test suite
 ├── BETAGRACE_REPORT.md                  # Full technical & operational report
 ├── CAPABILITY_LIST.md                   # Feature reference
 ├── compatibility-list.md                # Browser, Node, DB, email compatibility
