@@ -21,7 +21,7 @@ This is the public release of the BetaGrace constraint-locking evaluation.
 
 - **Canonical test set**: 27 concepts  
 - **Strict scoring**: zero-tolerance visual verification  
-- **Main result**: 20 / 27 concepts passed (81.5 %) under the documented rules  
+- **Main result**: 20 / 27 concepts passed (73.1 %) under the documented rules  
 - **Head-to-head extension**: two especially dense prompts (N=16 and N=23) run against native pipelines with fixed attempt budgets
 
 All detailed methodology, the full 27-row matrix, failure analysis, attempt accounting, A/B control notes, and head-to-head breakdowns live in the master report. This README only covers orientation and packaging.
