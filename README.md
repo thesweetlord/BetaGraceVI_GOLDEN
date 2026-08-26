@@ -5,7 +5,7 @@ BetaGrace AI is an independent, open-source software project. It is not affiliat
 [![Node](https://img.shields.io/badge/Node.js-20-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![Tests](https://img.shields.io/badge/smoke%20tests-76%2F78%20passing-yellow)  
 **BetaGrace vI** is a full-stack AI agent platform designed for adult creative writing, multi-modal generation (text, image, video), and deep narrative exploration. Built on TypeScript, React, Express, and PostgreSQL — runs entirely on free-tier AI providers.
-Github coderaph inspired by github.com/colbymchenry/codegraph
+Github coderaph inspired by [github.com/colbymchenry/codegraph](https://colbymchenry.github.io/codegraph/)
 
 **Current Version:** 4.3 — May 27, 2026
 **Test Status:** `npm run test:fast` — 76/78 smoke tests passing (97.4%); 2 local-synthesis debug retrieval checks currently return 401 Unauthorized.
