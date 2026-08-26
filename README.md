@@ -1,4 +1,5 @@
 # BetaGrace vI
+BetaGrace AI is an independent, open-source software project. It is not affiliated, associated, authorized, endorsed by, or in any way officially connected with any commercial logistics or trading entities.
 (https://github.com/thesweetlord/BetaGraceVI_GOLDEN)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Node](https://img.shields.io/badge/Node.js-20-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
