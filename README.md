@@ -19,7 +19,7 @@ This document is subject to change and scrutiny. I am only one developer.
 
 The result applies to the documented prompts, endpoints, attempt budgets, and visual verification rules. It does not claim that the underlying image model was modified or retrained, universal superiority across prompts or model versions, or statistical dominance from the small head-to-head sample.
 
-**Benchmark package:** IMAGE BENCHMARK.zip [README](IMAGE%20BENCHMARK/README.txt) · [master report](IMAGE%20BENCHMARK/BetaGrace_Benchmark_Master_Report_v2_5_Corrected.docx) · [27-prompt table](IMAGE%20BENCHMARK/BetaGrace_27_Canonical_Prompt_Table.xlsx) · [passing images](IMAGE%20BENCHMARK/Passes/) · [failed images](IMAGE%20BENCHMARK/Fails/) · [public image logs](IMAGE%20BENCHMARK/Public_image_logs_for_Postgresql_CLEAN.zip)
+**Benchmark package:** IMAGE BENCHMARK [README](IMAGE%20BENCHMARK/README.txt) · [master report](IMAGE%20BENCHMARK/BetaGrace_Benchmark_Master_Report_v2_5_Corrected.docx) · [27-prompt table](IMAGE%20BENCHMARK/BetaGrace_27_Canonical_Prompt_Table.xlsx) · [passing images](IMAGE%20BENCHMARK/Passes/) · [failed images](IMAGE%20BENCHMARK/Fails/) · [public image logs](IMAGE%20BENCHMARK/Public_image_logs_for_Postgresql_CLEAN.zip)
 
 ---
 
