@@ -10,6 +10,10 @@
 
 ## Image Generation Benchmark
 
+ORIGIN STORY:  
+Reached with no prior coding experience, no ControlNet, no custom datasets, and a free Pollinations endpoint.  
+Configuration lost -> Realization of gold-standard text-to-image adherence -> Three weeks of chasing ghost code -> Rebuilt build nearest to Aug 2 state -> Returned stronger than the original peak. 4 months over a 9 month period of development.
+
 ### High-Density Constraint-Locking Evaluation
 
 **20 / 27 canonical concepts passed (73.1%)** under strict zero-tolerance visual verification.
