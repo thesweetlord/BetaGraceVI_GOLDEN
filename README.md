@@ -15,6 +15,7 @@
 **20 / 27 canonical concepts passed (81.5%)** under strict zero-tolerance visual verification.
 
 This public benchmark tests whether an image-generation system can hold a dense set of precise, verifiable constraints at once, including laterality, exact text placement and material, dual lighting temperatures, micro-details, and object states. One missing or unverifiable critical constraint is a **FAIL**; aspect ratio is excluded from the pass/fail metric.
+This document is subject to change and scrutiny. I am only one developer.
 
 The result applies to the documented prompts, endpoints, attempt budgets, and visual verification rules. It does not claim that the underlying image model was modified or retrained, universal superiority across prompts or model versions, or statistical dominance from the small head-to-head sample.
 
