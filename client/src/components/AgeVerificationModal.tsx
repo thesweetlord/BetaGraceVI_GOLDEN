@@ -194,6 +194,7 @@ export function AgeVerificationModal() {
         {
           isOver18: true,
           learningDataAcknowledged: true,
+          legalConsentGiven: true,
           dataRetentionOptOut: !keepDataRetention,
         },
       );

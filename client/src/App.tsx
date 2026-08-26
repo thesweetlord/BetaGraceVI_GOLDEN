@@ -53,7 +53,20 @@ function Router() {
 }
 
 function AppContent() {
-  const { ageVerified, isOver18, theme, sessionId, setSessionId, setAgeVerification, dataRetentionOptOut, setTheme } = useAppStore();
+  const {
+    ageVerified,
+    isOver18,
+    theme,
+    sessionId,
+    setSessionId,
+    setSession,
+    setAgeVerification,
+    setConsent,
+    setMessages,
+    setCurrentConversationId,
+    dataRetentionOptOut,
+    setTheme,
+  } = useAppStore();
   const [location] = useLocation();
   const isPublicRoute = PUBLIC_ROUTES.some(r => location === r || location.startsWith(r + "?"));
 
@@ -120,6 +133,18 @@ function AppContent() {
       })
         .then(res => res.json())
         .then(data => {
+          setSession(data?.session ?? null);
+
+          // The server is authoritative after deletion. Clear persisted client
+          // data and reopen the legal flow when active consent was revoked.
+          if (data?.session?.consentGiven !== true) {
+            setMessages([]);
+            setCurrentConversationId(null);
+            setConsent(null);
+            setAgeVerification(false, null);
+            return;
+          }
+
           // Re-verify if isOver18 is missing OR if learning data acknowledgment was never stamped
           // (handles sessions created before the learningDataAcknowledged column was added)
           if (data?.session?.isOver18 !== true || data?.session?.learningDataAcknowledged !== true) {
@@ -138,7 +163,7 @@ function AppContent() {
           // which will trigger modal then
         });
     }
-  }, [ageVerified, sessionId]);
+  }, [ageVerified, sessionId, setAgeVerification, setConsent, setCurrentConversationId, setMessages, setSession]);
 
   // Public legal pages are accessible without age verification
   if (isPublicRoute) {

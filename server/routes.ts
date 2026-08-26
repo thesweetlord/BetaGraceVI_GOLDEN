@@ -2126,8 +2126,12 @@ Apply these principles while respecting the creative context and user preference
   app.post("/api/session/verify-age", async (req, res) => {
     try {
       const sessionId = getSessionId(req);
-      const { isOver18, learningDataAcknowledged, dataRetentionOptOut } =
-        req.body;
+      const {
+        isOver18,
+        learningDataAcknowledged,
+        dataRetentionOptOut,
+        legalConsentGiven,
+      } = req.body;
 
       console.log("[AGE VERIFY] Received request:", {
         sessionId,
@@ -2161,7 +2165,7 @@ Apply these principles while respecting the creative context and user preference
             activeModes: ["standard"],
             ageVerified: true,
             isOver18: isOver18,
-            consentGiven: false,
+            consentGiven: legalConsentGiven === true,
             dataRetentionOptOut:
               typeof dataRetentionOptOut === "boolean"
                 ? dataRetentionOptOut
@@ -2185,6 +2189,7 @@ Apply these principles while respecting the creative context and user preference
         await storage.updateSession(sessionId, {
           isOver18: isOver18,
           ageVerified: true,
+          ...(legalConsentGiven === true ? { consentGiven: true } : {}),
           learningDataAcknowledged: learningDataAcknowledged === true,
           learningDataAcknowledgedAt: acknowledgedAt ?? null,
           ...(typeof dataRetentionOptOut === "boolean"
@@ -2778,6 +2783,14 @@ Apply these principles while respecting the creative context and user preference
         return res.status(403).json({
           error: "Age verification required",
           message: "BetaGrace is restricted to users 18+ years old",
+        });
+      }
+
+      if (!session.consentGiven) {
+        return res.status(403).json({
+          error: "Legal consent required",
+          message: "Please review and accept the Terms of Service and Privacy Policy.",
+          requiresConsent: true,
         });
       }
 
@@ -4676,6 +4689,14 @@ Output format:
         });
       }
 
+      if (!session.consentGiven) {
+        return res.status(403).json({
+          error: "Legal consent required",
+          message: "Please review and accept the Terms of Service and Privacy Policy.",
+          requiresConsent: true,
+        });
+      }
+
       console.log("[CHAT] Age verification passed, proceeding with chat");
 
       const rate = await storage.checkRateLimit(sessionId);
@@ -5538,6 +5559,14 @@ Output format:
         });
       }
 
+      if (!session.consentGiven) {
+        return res.status(403).json({
+          error: "Legal consent required",
+          message: "Please review and accept the Terms of Service and Privacy Policy.",
+          requiresConsent: true,
+        });
+      }
+
       const rate = await storage.checkRateLimit(sessionId);
       if (!rate.allowed) {
         return res
@@ -6138,6 +6167,15 @@ Output format:
       );
 
       const ok = await storage.deleteAllUserData(sessionId);
+
+      // Preserve the historical consent record while requiring fresh legal acceptance.
+      await storage.updateSession(sessionId, {
+        ageVerified: false,
+        isOver18: null,
+        consentGiven: false,
+        learningDataAcknowledged: false,
+        learningDataAcknowledgedAt: null,
+      });
 
       console.log(
         `[PRIVACY DELETE] Completed for session ${sessionId}: success=${ok}`,
@@ -6877,6 +6915,13 @@ Output format:
         //           proof of user agreement). The session row is kept so the consent audit
         //           panel continues to display the full consent history for this session.
         await storage.deleteAllUserData(sessionId);
+        await storage.updateSession(sessionId, {
+          ageVerified: false,
+          isOver18: null,
+          consentGiven: false,
+          learningDataAcknowledged: false,
+          learningDataAcknowledgedAt: null,
+        });
 
         console.log(
           `[ADMIN DELETE SESSION] ${sessionId} — GDPR Art. 17 erasure complete (data deleted, consent record retained for legal audit)`,
