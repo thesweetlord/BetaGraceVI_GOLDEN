@@ -20,7 +20,7 @@ Configuration lost -> Realization of gold-standard text-to-image adherence -> Th
 
 ### High-Density Constraint-Locking Evaluation
 
-**20 / 27 canonical concepts passed (74.1%)** under strict zero-tolerance visual verification.
+**19 / 27 canonical concepts passed (70.37%)** under strict zero-tolerance visual verification.
 
 This public benchmark tests whether an image-generation system can hold a dense set of precise, verifiable constraints at once, including laterality, exact text placement and material, dual lighting temperatures, micro-details, and object states. One missing or unverifiable critical constraint is a **FAIL**; aspect ratio is excluded from the pass/fail metric.
 This document is subject to change and scrutiny. I am only one developer.
